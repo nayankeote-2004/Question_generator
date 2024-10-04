@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:test_1/email_otp.dart';
 import 'package:test_1/otp_page.dart';
 
 class AuthPage extends StatefulWidget {
@@ -15,7 +16,7 @@ class _AuthPageState extends State<AuthPage> {
   bool _isLoading = false;
 
   // Hardcoded credentials
-  final String hardcodedEmail = 'nayan@gmail.com';
+  final String hardcodedEmail = 'nayankeote2@gmail.com';
   final String hardcodedPassword = '12345678';
 
   @override
@@ -146,7 +147,7 @@ class _AuthPageState extends State<AuthPage> {
                                 Navigator.pushReplacement(
                                   context,
                                   MaterialPageRoute(
-                                      builder: (context) => OtpPage()),
+                                      builder: (context) => OtpScreen(emailId: hardcodedEmail)),
                                 );
                               } else {
                                 // Show error if credentials don't match

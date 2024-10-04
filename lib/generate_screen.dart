@@ -77,6 +77,14 @@ class _GeneratePageState extends State<GeneratePage> {
                 },
                 child: const Text('Download Document'),
               ),
+            const SizedBox(height: 20),
+            if (selectedDoc != null)
+              ElevatedButton(
+                onPressed: () {
+                 //
+                },
+                child: const Text('Preview Document'),
+              ),
           ],
         ),
       ),

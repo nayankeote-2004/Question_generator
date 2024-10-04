@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:test_1/generate_screen.dart';
 import 'package:test_1/login.dart';
 
-void main() {
+void main() async {
   runApp(const MyApp());
 }
 
@@ -17,7 +17,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: GeneratePage(),
+      home: AuthPage(),
       debugShowCheckedModeBanner: false,
     );
   }
