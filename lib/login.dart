@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:test_1/otp_page.dart';
@@ -8,15 +9,14 @@ class AuthPage extends StatefulWidget {
 }
 
 class _AuthPageState extends State<AuthPage> {
-  bool isLogin = true;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  final String fixedEmail = 'nayankeote2@gmail.com'; // Fixed email
+  final String fixedPassword = '12345678'; // Fixed password
+
   final _formKey = GlobalKey<FormState>();
-  String _email = '';
   String _password = '';
   bool _isLoading = false;
-
-  // Hardcoded credentials
-  final String hardcodedEmail = 'nayan@gmail.com';
-  final String hardcodedPassword = '12345678';
 
   @override
   Widget build(BuildContext context) {
@@ -32,44 +32,26 @@ class _AuthPageState extends State<AuthPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   SizedBox(height: 40),
-                  AnimatedSwitcher(
-                    duration: Duration(milliseconds: 500),
-                    transitionBuilder: (Widget child, Animation<double> animation) {
-                      return FadeTransition(
-                        opacity: animation,
-                        child: child,
-                      );
-                    },
-                    child: Text(
-                      isLogin ? 'Welcome Back!' : 'Create Your Account',
-                      key: ValueKey<bool>(isLogin),
-                      style: GoogleFonts.poppins(
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.teal,
-                      ),
+                  Text(
+                    'Welcome Back!',
+                    style: GoogleFonts.poppins(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.teal,
                     ),
                   ),
                   SizedBox(height: 8),
-                  AnimatedSwitcher(
-                    duration: Duration(milliseconds: 500),
-                    transitionBuilder: (Widget child, Animation<double> animation) {
-                      return FadeTransition(
-                        opacity: animation,
-                        child: child,
-                      );
-                    },
-                    child: Text(
-                      isLogin ? 'Log in to continue' : 'Sign up to get started',
-                      key: ValueKey<bool>(isLogin),
-                      style: GoogleFonts.poppins(
-                        fontSize: 18,
-                        color: Colors.grey[700],
-                      ),
+                  Text(
+                    'Log in to continue',
+                    style: GoogleFonts.poppins(
+                      fontSize: 18,
+                      color: Colors.grey[700],
                     ),
                   ),
                   SizedBox(height: 40),
                   TextFormField(
+                    initialValue: fixedEmail,
+                    enabled: false,
                     decoration: InputDecoration(
                       labelText: 'Email',
                       labelStyle: TextStyle(color: Colors.teal),
@@ -77,26 +59,9 @@ class _AuthPageState extends State<AuthPage> {
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.teal),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
                       filled: true,
                       fillColor: Colors.teal.withOpacity(0.05),
                     ),
-                    validator: (value) {
-                      if (value!.isEmpty) {
-                        return 'Enter your email';
-                      } else if (!value.contains('@gmail.com')) {
-                        return 'Enter a valid Gmail address';
-                      }
-                      return null;
-                    },
-                    onChanged: (value) {
-                      setState(() {
-                        _email = value;
-                      });
-                    },
                   ),
                   SizedBox(height: 20),
                   TextFormField(
@@ -118,8 +83,8 @@ class _AuthPageState extends State<AuthPage> {
                     validator: (value) {
                       if (value!.isEmpty) {
                         return 'Enter your password';
-                      } else if (value.length < 6) {
-                        return 'Password must be at least 6 characters long';
+                      } else if (value != fixedPassword) {
+                        return 'Incorrect password';
                       }
                       return null;
                     },
@@ -139,22 +104,35 @@ class _AuthPageState extends State<AuthPage> {
                                 _isLoading = true;
                               });
 
-                              // Hardcoded login check
-                              if (_email == hardcodedEmail &&
-                                  _password == hardcodedPassword) {
-                                // Navigate to OTP page after successful login
+                              try {
+                                // Login with fixed credentials
+                                UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+                                  email: fixedEmail,
+                                  password: _password,
+                                );
+
+                                // Send OTP/verification email to the fixed email
+                                if (!userCredential.user!.emailVerified) {
+                                  await userCredential.user!.sendEmailVerification();
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('OTP has been sent to your email. Please verify.'),
+                                    ),
+                                  );
+                                }
+
+                                // Navigate to OTP page
                                 Navigator.pushReplacement(
                                   context,
                                   MaterialPageRoute(
-                                      builder: (context) => OtpPage()),
+                                    builder: (context) => OtpPage(),
+                                  ),
                                 );
-                              } else {
-                                // Show error if credentials don't match
+                              } catch (e) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                      content: Text(
-                                          'Invalid email or password')),
+                                  SnackBar(content: Text('Authentication failed')),
                                 );
+                              } finally {
                                 setState(() {
                                   _isLoading = false;
                                 });
@@ -163,11 +141,10 @@ class _AuthPageState extends State<AuthPage> {
                           },
                     child: _isLoading
                         ? CircularProgressIndicator(
-                            valueColor:
-                                AlwaysStoppedAnimation<Color>(Colors.white),
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                           )
                         : Text(
-                            isLogin ? 'Login' : 'Sign Up',
+                            'Login',
                             style: TextStyle(fontSize: 18),
                           ),
                     style: ElevatedButton.styleFrom(
