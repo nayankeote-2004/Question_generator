@@ -11,10 +11,8 @@ class AuthPage extends StatefulWidget {
 class _AuthPageState extends State<AuthPage> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  final String fixedEmail = 'nayankeote2@gmail.com'; // Fixed email
-  final String fixedPassword = '12345678'; // Fixed password
-
   final _formKey = GlobalKey<FormState>();
+  String _email = '';
   String _password = '';
   bool _isLoading = false;
 
@@ -49,9 +47,8 @@ class _AuthPageState extends State<AuthPage> {
                     ),
                   ),
                   SizedBox(height: 40),
+                  // Email Input Field
                   TextFormField(
-                    initialValue: fixedEmail,
-                    enabled: false,
                     decoration: InputDecoration(
                       labelText: 'Email',
                       labelStyle: TextStyle(color: Colors.teal),
@@ -62,8 +59,20 @@ class _AuthPageState extends State<AuthPage> {
                       filled: true,
                       fillColor: Colors.teal.withOpacity(0.05),
                     ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Enter your email';
+                      }
+                      return null;
+                    },
+                    onChanged: (value) {
+                      setState(() {
+                        _email = value;
+                      });
+                    },
                   ),
                   SizedBox(height: 20),
+                  // Password Input Field
                   TextFormField(
                     decoration: InputDecoration(
                       labelText: 'Password',
@@ -81,10 +90,8 @@ class _AuthPageState extends State<AuthPage> {
                     ),
                     obscureText: true,
                     validator: (value) {
-                      if (value!.isEmpty) {
+                      if (value == null || value.isEmpty) {
                         return 'Enter your password';
-                      } else if (value != fixedPassword) {
-                        return 'Incorrect password';
                       }
                       return null;
                     },
@@ -105,13 +112,13 @@ class _AuthPageState extends State<AuthPage> {
                               });
 
                               try {
-                                // Login with fixed credentials
+                                // Login with email and password from Firebase
                                 UserCredential userCredential = await _auth.signInWithEmailAndPassword(
-                                  email: fixedEmail,
+                                  email: _email,
                                   password: _password,
                                 );
 
-                                // Send OTP/verification email to the fixed email
+                                // Send OTP/verification email to the entered email
                                 if (!userCredential.user!.emailVerified) {
                                   await userCredential.user!.sendEmailVerification();
                                   ScaffoldMessenger.of(context).showSnackBar(
@@ -130,7 +137,7 @@ class _AuthPageState extends State<AuthPage> {
                                 );
                               } catch (e) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('Authentication failed')),
+                                  SnackBar(content: Text('Authentication failed: ${e.toString()}')),
                                 );
                               } finally {
                                 setState(() {

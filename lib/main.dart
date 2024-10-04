@@ -2,10 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:test_1/generate_screen.dart';
 import 'package:test_1/login.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  // try {
+  //   await Firebase.initializeApp();
+  // } catch (e) {
+  //   print('Error initializing Firebase: $e');
+  // }
   runApp(const MyApp());
 }
 
@@ -20,7 +28,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: GeneratePage(),
+      home: AuthPage(),
       debugShowCheckedModeBanner: false,
     );
   }
